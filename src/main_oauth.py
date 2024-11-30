@@ -107,20 +107,18 @@ def list_drive_files_and_permissions(service, parent_id=None, depth=0):
             type = 'Folder'
             color = 'yellow'
 
-        text = (" " * depth + f"{type}: {item['name']} (ID: {item['id']}, Type: {item['mimeType']})")
-        print(colored(text, color))
-
         # Fetch and print permissions
         permissions = get_file_permissions(item['id'], service)
         if not permissions:
-            text = (" " * (depth + 2) + "No permissions found.")
-            print(colored(text, "cyan", None, ["bold"]))
+            text = (" " * depth + f"{type}: {item['name']} (ID: {item['id']}, Type: {item['mimeType']}, Permissions [N/A])")
+            print(colored(text, color))
         else:
-            text = (" " * (depth + 2) + "Permissions:")
-            print(colored(text, "cyan", None, ["bold"]))
+            text = (" " * depth + 
+                    f"{type}: {item['name']} (ID: {item['id']}, Type: {item['mimeType']}, Permissions [{str(len(permissions))}])")
+            print(colored(text, color))
             for permission in permissions:
-                text = (" " * (depth + 4) +
-                        f"- Role: {permission.get('role')}, Type: {permission.get('type')}, Email: {permission.get('emailAddress', 'N/A')}")
+                text = (" " * (depth + 4) + permission.get('emailAddress', 'N/A') + 
+                        f" [" + permission.get('role') + ", " +  permission.get('type') + "]")
                 print(colored(text, "cyan"))
 
         # If the item is a folder, recurse into it
