@@ -96,7 +96,7 @@ def list_drive_files_and_permissions(service, parent_id=None, depth=0):
     items = results.get('files', [])
 
     if not items:
-        print(colored(" " * depth + "No files found."), "red")
+        #print(colored(" " * depth + "No files found."), "red")
         return
 
     for item in items:
@@ -110,11 +110,11 @@ def list_drive_files_and_permissions(service, parent_id=None, depth=0):
         # Fetch and print permissions
         permissions = get_file_permissions(item['id'], service)
         if not permissions:
-            text = (" " * depth + f"{type}: {item['name']} (ID: {item['id']}, Type: {item['mimeType']}, Permissions [N/A])")
+            text = (" " * depth + f"{item['name']} (ID: {item['id']}, {type}, Permissions [N/A])")
             print(colored(text, color))
         else:
             text = (" " * depth + 
-                    f"{type}: {item['name']} (ID: {item['id']}, Type: {item['mimeType']}, Permissions [{str(len(permissions))}])")
+                    f"{item['name']} (ID: {item['id']}, {type}, Permissions [{str(len(permissions))}])")
             print(colored(text, color))
             for permission in permissions:
                 text = (" " * (depth + 4) + permission.get('emailAddress', 'N/A') + 
