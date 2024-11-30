@@ -1,9 +1,10 @@
 import os
 from google.oauth2.credentials import Credentials
-from google_auth_httplib2 import Request
+from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from termcolor import colored
 
 # Scopes required for accessing Google Drive
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
@@ -95,26 +96,35 @@ def list_drive_files_and_permissions(service, parent_id=None, depth=0):
     items = results.get('files', [])
 
     if not items:
-        print(" " * depth + "No files found.")
+        print(colored(" " * depth + "No files found."), "red")
         return
 
     for item in items:
-        print(" " * depth + f"File/Folder: {item['name']} (ID: {item['id']}, Type: {item['mimeType']})")
+        mimeType = item['mimeType']
+        type = 'File'
+        color = 'green'
+        if mimeType == 'application/vnd.google-apps.folder':
+            type = 'Folder'
+            color = 'yellow'
+
+        text = (" " * depth + f"{type}: {item['name']} (ID: {item['id']}, Type: {item['mimeType']})")
+        print(colored(text, color))
 
         # Fetch and print permissions
         permissions = get_file_permissions(item['id'], service)
         if not permissions:
-            print(" " * (depth + 2) + "No permissions found.")
+            text = (" " * (depth + 2) + "No permissions found.")
+            print(colored(text, "cyan", None, ["bold"]))
         else:
-            print(" " * (depth + 2) + "Permissions:")
+            text = (" " * (depth + 2) + "Permissions:")
+            print(colored(text, "cyan", None, ["bold"]))
             for permission in permissions:
-                print(
-                    " " * (depth + 4)
-                    + f"- Role: {permission.get('role')}, Type: {permission.get('type')}, Email: {permission.get('emailAddress', 'N/A')}"
-                )
+                text = (" " * (depth + 4) +
+                        f"- Role: {permission.get('role')}, Type: {permission.get('type')}, Email: {permission.get('emailAddress', 'N/A')}")
+                print(colored(text, "cyan"))
 
         # If the item is a folder, recurse into it
-        if item['mimeType'] == 'application/vnd.google-apps.folder':
+        if mimeType == 'application/vnd.google-apps.folder':
             list_drive_files_and_permissions(service, parent_id=item['id'], depth=depth + 2)
 
 def main():
