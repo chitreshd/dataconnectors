@@ -23,7 +23,7 @@ def create_tables():
             doc_name TEXT NOT NULL,
             doc_id TEXT NOT NULL UNIQUE,
             doc_type TEXT NOT NULL,
-            doc_size INTEGER NOT NULL,
+            doc_size INTEGER DEFAULT 0,
             parent_id TEXT NOT NULL
         );
     """)
