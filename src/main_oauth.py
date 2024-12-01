@@ -23,6 +23,7 @@ def create_tables():
             doc_name TEXT NOT NULL,
             doc_id TEXT NOT NULL UNIQUE,
             doc_type TEXT NOT NULL,
+            doc_size INTEGER NOT NULL,
             parent_id TEXT NOT NULL
         );
     """)
@@ -41,7 +42,7 @@ def create_tables():
     conn.commit()
 
 # Insert a document with associated users
-def insert_document_by_doc_id(doc_name, doc_id, doc_type, parent_id):
+def insert_document_by_doc_id(doc_name, doc_id, doc_type, doc_size, parent_id):
     try:
 
         #check if the doc exist
@@ -53,8 +54,8 @@ def insert_document_by_doc_id(doc_name, doc_id, doc_type, parent_id):
             return existing_doc[0]
 
         # Insert the document
-        cursor.execute("INSERT INTO documents (doc_name, doc_id, doc_type, parent_id) VALUES (?, ?, ?, ?)", 
-                (doc_name, doc_id, doc_type, parent_id))
+        cursor.execute("INSERT INTO documents (doc_name, doc_id, doc_type, doc_size, parent_id) VALUES (?,?,?,?,?)", 
+                (doc_name, doc_id, doc_type, doc_size, parent_id))
         doc_row_id = cursor.lastrowid  # Get the document's row ID
 
         conn.commit()
@@ -89,10 +90,12 @@ def get_users_by_document(identifier, identifier_type):
         query += " WHERE d.doc_id = ?;"
     elif identifier_type == "type":
         query += " WHERE d.doc_type = ?;"
+    elif identifier_type == "size":
+        query += " WHERE d.doc_size = ?;"
     elif identifier_type == "parent_id":
         query += " WHERE d.parent_id = ?;"
     else:
-        raise ValueError("Invalid identifier_type. Use 'name', 'id', 'type', 'parent_id'.")
+        raise ValueError("Invalid identifier_type. Use 'name', 'id', 'type', 'size', 'parent_id'.")
     
     cursor.execute(query, (identifier,))
     return cursor.fetchall()
@@ -235,19 +238,21 @@ def list_drive_files_and_permissions(service, parent_id=None, depth=0):
 
         doc_name = item['name']
         doc_id = item['id']
+        doc_size = int(item.get('size')) if item.get('size') else 0
 
-        doc_row_id  = insert_document_by_doc_id(doc_name, doc_id, doc_type, parent_id if parent_id else 0)
+        doc_row_id  = insert_document_by_doc_id(doc_name, doc_id, doc_type, doc_size, 
+                parent_id if parent_id else 0)
 
         # Fetch and print permissions
         permissions = get_file_permissions(doc_id, service)
         if not permissions:
-            text = (" " * depth + f"{doc_name} (ID: {doc_id}, {doc_type}, Permissions [N/A])")
+            text = (" " * depth + f"{doc_name} (ID: {doc_id}, {doc_type}, Permissions [N/A], {doc_size})")
             print(colored(text, color))
         else:
             permissions_len = str(len(permissions))
 
             text = (" " * depth + 
-                    f"{doc_name} (ID: {doc_id}, {doc_type}, Permissions [{permissions_len}])")
+                    f"{doc_name} (ID: {doc_id}, {doc_type}, Permissions [{permissions_len}], {doc_size})")
             print(colored(text, color))
             for permission in permissions:
 
