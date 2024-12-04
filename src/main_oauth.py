@@ -39,6 +39,20 @@ def create_tables():
             FOREIGN KEY (doc_id) REFERENCES documents (id) ON DELETE CASCADE
         );
     """)
+
+    # Users table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS page_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            page_token INTEGER NOT NULL,
+            drive
+            doc_id INTEGER NOT NULL,
+            user_email TEXT NOT NULL,
+            user_role TEXT NOT NULL,
+            user_type TEXT NOT NULL,
+            FOREIGN KEY (doc_id) REFERENCES documents (id) ON DELETE CASCADE
+        );
+    """)
     conn.commit()
 
 # Insert a document with associated users
